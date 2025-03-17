@@ -6,47 +6,47 @@ B=SystemModel.B;
 M=SystemModel.M;
 C=SystemModel.C;
 
-call_Q=kron(eye(N),Q);
-call_R=kron(eye(N),R);
+cQ=kron(eye(N),Q);
+cR=kron(eye(N),R);
 
-call_F=kron(eye(N),F);
-call_f=kron(ones(N,1),f);
+cF=kron(eye(N),F);
+cf=kron(ones(N,1),f);
 
-call_AC=[];
-call_BC=[];   
-call_MC=[];
+cAC=[];
+cBC=[];   
+cMC=[];
 x_term_r=[];
 
 for ind_raw=1:N
-    % call_A
-    call_AC=[call_AC;
+    % cA
+    cAC=[cAC;
               C*A^(ind_raw)];
-    % call_B
+    % cB
     
-    call_B_new_col=[];
+    cB_new_col=[];
     for ind_col=1:N
         if ind_col<=ind_raw
-            call_B_new_col=[call_B_new_col, C*A^(ind_raw-ind_col)*B];
+            cB_new_col=[cB_new_col, C*A^(ind_raw-ind_col)*B];
         else
-            call_B_new_col=[call_B_new_col, zeros(size(C*B))];
+            cB_new_col=[cB_new_col, zeros(size(C*B))];
         end
     end
     
-    call_BC=[call_BC;
-              call_B_new_col];
+    cBC=[cBC;
+              cB_new_col];
           
-    % call_M
-    call_M_new_col=[];
+    % cM
+    cM_new_col=[];
     for ind_col=1:N
         if ind_col<=ind_raw
-            call_M_new_col=[call_M_new_col, C*A^(ind_raw-ind_col)*M];
+            cM_new_col=[cM_new_col, C*A^(ind_raw-ind_col)*M];
         else
-            call_M_new_col=[call_M_new_col, zeros(size(C*M))];
+            cM_new_col=[cM_new_col, zeros(size(C*M))];
         end
     end
     
-    call_MC=[call_MC;
-              call_M_new_col];
+    cMC=[cMC;
+              cM_new_col];
 end
 
 %% Adding Terminal Cost
@@ -56,51 +56,51 @@ if exist('S') && ~isempty(S)
     p=size(C,1);
     d=size(M,2);
     
-    call_Q=[call_Q(1:end-p,1:end-p),        zeros((N-1)*p,n)
+    cQ=[cQ(1:end-p,1:end-p),        zeros((N-1)*p,n)
             zeros(n,(N-1)*p),             S];
     
-    % call_A    
-    call_AC=[call_AC(1:end-p,:);
+    % cA    
+    cAC=[cAC(1:end-p,:);
             A^(N)];  
       
-    % call_B    
-    call_B_new_col=[];
+    % cB    
+    cB_new_col=[];
     for ind_col=1:N
         if ind_col<=N
-            call_B_new_col=[call_B_new_col, A^(N-ind_col)*B];
+            cB_new_col=[cB_new_col, A^(N-ind_col)*B];
         else
-            call_B_new_col=[call_B_new_col, zeros(size(B))];
+            cB_new_col=[cB_new_col, zeros(size(B))];
         end
     end
     
-    call_BC=[call_BC(1:end-p,1:end-m), zeros((N-1)*p,m);
-            call_B_new_col];
+    cBC=[cBC(1:end-p,1:end-m), zeros((N-1)*p,m);
+            cB_new_col];
           
-    % call_M
-    call_M_new_col=[];
+    % cM
+    cM_new_col=[];
     for ind_col=1:N
         if ind_col<=N
-            call_M_new_col=[call_M_new_col, A^(N-ind_col)*M];
+            cM_new_col=[cM_new_col, A^(N-ind_col)*M];
         else
-            call_M_new_col=[call_M_new_col, zeros(size(M))];
+            cM_new_col=[cM_new_col, zeros(size(M))];
         end
     end
     
-    call_MC=[call_MC(1:end-p,1:end-d), zeros((N-1)*p,d);
-              call_M_new_col];   
+    cMC=[cMC(1:end-p,1:end-d), zeros((N-1)*p,d);
+              cM_new_col];   
 
     x_term_r=zeros(n,1);
 end
 
 
    % Building Output Structure:
-   condensedMatrices.call_AC=call_AC;
-   condensedMatrices.call_BC=call_BC;
-   condensedMatrices.call_MC=call_MC;
-   condensedMatrices.call_Q=call_Q;
-   condensedMatrices.call_R=call_R;
-   condensedMatrices.call_F=call_F;
-   condensedMatrices.call_f=call_f;
+   condensedMatrices.cAC=cAC;
+   condensedMatrices.cBC=cBC;
+   condensedMatrices.cMC=cMC;
+   condensedMatrices.cQ=cQ;
+   condensedMatrices.cR=cR;
+   condensedMatrices.cF=cF;
+   condensedMatrices.cf=cf;
    condensedMatrices.x_term_r=x_term_r;
     
 end

@@ -38,7 +38,7 @@ switch exerciseNumber
     exerciseData.Tstep=10; %[s]
     
     exerciseData.Tdist=150;%[s]
-    exerciseData.D=M*9.8*sin(pi/180*5);%[N]
+    exerciseData.D=M*9.81*sin(pi/180*5);%[N]
     
     exerciseData.TdistUnknown=2*exerciseData.Tdist;%[s]
     exerciseData.DUnknown=exerciseData.D;%
