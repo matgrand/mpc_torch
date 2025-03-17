@@ -24,9 +24,9 @@ exerciseData.u_min
 %%   MPC controller design   %%
 %-----------------------------%
 %% Step 1: upload a model of the system to be controlled
-    % Possible simplifications (activate by setting the variable to 1):
-    exactModel=1;
-    SystemModel=LoadSystemModel(currentExercise,exactModel);
+% Possible simplifications (activate by setting the variable to 1):
+exactModel=1;
+SystemModel=LoadSystemModel(currentExercise,exactModel);
     
 %% Step 2: use to model to create the condensed MPC matrices
 % You are provided with the command
