@@ -5,7 +5,7 @@ addpath('Sources')
 mass = 1e3; % [kg] mass of the car
 damp = 10; % [Ns/m] damping coefficient
 ms2kmh = 3.6; % [m/s] to [km/h]
-dstrb = mass * 9.81 * sin(deg2rad(5)) % [N] disturbance force (slope of 5 degrees)
+dstrb = mass * 9.81 * sin(deg2rad(5)); % [N] disturbance force (slope of 5 degrees)
 start_dstrb = 150; % [s] start of the disturbance
 
 ref = 50; % [km/h] reference speed
@@ -60,8 +60,8 @@ figure('Position', [0 0 2500 1500]); subplot(2,1,1); plot(td, xs); grid on; subp
 % return
 
 %% MPC
-N = 100; % prediction horizon
-Q = 500; % state cost
+N = 50; % prediction horizon
+Q = 1500; % state cost
 R = 1; % input cost
 S = 0; % terminal cost
 
@@ -87,13 +87,14 @@ ds = dstrb * heaviside(td - start_dstrb) + dstrb * heaviside(td - 300); % 2 dist
 for i = 2:length(td)-N
     % mpc
     x = xs(i-1); d = ds(i-1);
+
     % cDk = ds(i-1:i+N-2)'; % disturbance vector
-    cDk = dstrb*ones(N, 1)*heaviside(td(i-1) - start_dstrb)
+    cDk = dstrb*ones(N, 1)*heaviside(td(i-1) - start_dstrb); % only one disturb is predicted
+    % cDk = ds(i-1)*ones(N, 1);
+
     H_qp = cB'*cQ*cB + cR;
     H_qp = (H_qp + H_qp')/2; % make sure it is symmetric
 
-    dist_part = (cM*cDk)'
-    cAx = (cA*x)'
     % f_qp = (cA*x + cM*cDk - cYr(i-1))' * cQ * cB; % - cUr' * cR
     f_qp = cB'*cQ*(cA*x + cM*cDk - cYr(i-1)); % - cUr' * cR
 
@@ -110,17 +111,6 @@ for i = 2:length(td)-N
     us(i) = u;
 end
 
-% xs'
-% ys'
-% us'
-
-% return
-% disp('Plotting...')
-
-figure('Position', [0 0 2500 1500]); 
-subplot(2,1,1); 
-plot(td, ys); 
-%plot a reference horizontal line red
-hold on; plot(td, ref*ones(size(td)), 'r--'); hold off;
-grid on; 
+figure('Position', [0 0 2500 1500]); subplot(2,1,1); 
+plot(td, ys); hold on; plot(td, ref*ones(size(td)), 'r--'); hold off; grid on; 
 subplot(2,1,2); plot(td, us); grid on;
