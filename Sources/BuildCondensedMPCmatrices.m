@@ -1,10 +1,4 @@
-function condensedMatrices=BuildCondensedMPCmatrices(SystemModel,R,Q,F,f,N,S)
-
-%Extracting Matrices from the strucutre (for code readibility only)
-A=SystemModel.A;
-B=SystemModel.B;
-M=SystemModel.M;
-C=SystemModel.C;
+function [cA, cB, cM, cQ, cR, cF, cf]=BuildCondensedMPCmatrices(A, B, C, M, Q, R, S, F, f, N)
 
 cQ=kron(eye(N),Q);
 cR=kron(eye(N),R);
@@ -12,14 +6,13 @@ cR=kron(eye(N),R);
 cF=kron(eye(N),F);
 cf=kron(ones(N,1),f);
 
-cAC=[];
-cBC=[];   
-cMC=[];
-x_term_r=[];
+cA=[];
+cB=[];   
+cM=[];
 
 for ind_raw=1:N
     % cA
-    cAC=[cAC;
+    cA=[cA;
               C*A^(ind_raw)];
     % cB
     
@@ -32,7 +25,7 @@ for ind_raw=1:N
         end
     end
     
-    cBC=[cBC;
+    cB=[cB;
               cB_new_col];
           
     % cM
@@ -45,7 +38,7 @@ for ind_raw=1:N
         end
     end
     
-    cMC=[cMC;
+    cM=[cM;
               cM_new_col];
 end
 
@@ -60,7 +53,7 @@ if exist('S') && ~isempty(S)
             zeros(n,(N-1)*p),             S];
     
     % cA    
-    cAC=[cAC(1:end-p,:);
+    cA=[cA(1:end-p,:);
             A^(N)];  
       
     % cB    
@@ -73,7 +66,7 @@ if exist('S') && ~isempty(S)
         end
     end
     
-    cBC=[cBC(1:end-p,1:end-m), zeros((N-1)*p,m);
+    cB=[cB(1:end-p,1:end-m), zeros((N-1)*p,m);
             cB_new_col];
           
     % cM
@@ -86,22 +79,20 @@ if exist('S') && ~isempty(S)
         end
     end
     
-    cMC=[cMC(1:end-p,1:end-d), zeros((N-1)*p,d);
+    cM=[cM(1:end-p,1:end-d), zeros((N-1)*p,d);
               cM_new_col];   
 
-    x_term_r=zeros(n,1);
 end
 
 
-   % Building Output Structure:
-   condensedMatrices.cAC=cAC;
-   condensedMatrices.cBC=cBC;
-   condensedMatrices.cMC=cMC;
-   condensedMatrices.cQ=cQ;
-   condensedMatrices.cR=cR;
-   condensedMatrices.cF=cF;
-   condensedMatrices.cf=cf;
-   condensedMatrices.x_term_r=x_term_r;
+%    % Building Output Structure:
+%    condensedMatrices.cA=cA;
+%    condensedMatrices.cB=cB;
+%    condensedMatrices.cM=cM;
+%    condensedMatrices.cQ=cQ;
+%    condensedMatrices.cR=cR;
+%    condensedMatrices.cF=cF;
+%    condensedMatrices.cf=cf;
     
 end
 
