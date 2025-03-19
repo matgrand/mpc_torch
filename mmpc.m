@@ -5,12 +5,12 @@ addpath('Sources')
 mass = 1e3; % [kg] mass of the car
 damp = 10; % [Ns/m] damping coefficient
 ms2kmh = 3.6; % [m/s] to [km/h]
-dstrb = mass * 9.81 * sin(deg2rad(5)); % [N] disturbance force (slope of 5 degrees)
-start_dstrb = 150; % [s] start of the disturbance
+dstrb = mass * 9.81 * sin(deg2rad(3)); % [N] disturbance force (slope of 5 degrees)
+start_dstrb = 120; % [s] start of the disturbance
 
 ref = 50; % [km/h] reference speed
 
-u_max = 1e3; % [N] maximum control input
+u_max = 400; % [N] maximum control input
 
 dt = .1; % [s] time step simulation
 T = 500; % [s] simulation time
@@ -55,13 +55,13 @@ for i = 2:length(td)
     us(i) = u;
 end
 
-figure('Position', [0 0 2500 1500]); subplot(2,1,1); plot(td, xs); grid on; subplot(2,1,2); plot(td, us); grid on;
+% figure('Position', [0 0 2500 1500]); subplot(2,1,1); plot(td, xs); grid on; subplot(2,1,2); plot(td, us); grid on;
 
 % return
 
 %% MPC
 N = 50; % prediction horizon
-Q = 1500; % state cost
+Q = 500; % state cost
 R = 1; % input cost
 S = 0; % terminal cost
 
@@ -79,31 +79,30 @@ cUr = zeros(N, 1); % reference input
 xs = zeros(length(td), 1); % states
 ys = zeros(length(td), 1); % outputs
 us = zeros(length(td), 1); % inputs
+
 % ds = dstrb * heaviside(td - start_dstrb); % disturbances
 % ds = dstrb * ones(length(td)); % disturbances
-ds = dstrb * heaviside(td - start_dstrb) + dstrb * heaviside(td - 300); % 2 disturbances
+ds = - dstrb * heaviside(td - start_dstrb) + .5*dstrb * heaviside(td - 2*start_dstrb); % 2 disturbances
 
 % simulate the system with a for loop, MPC control
 for i = 2:length(td)-N
     % mpc
     x = xs(i-1); d = ds(i-1);
 
-    % cDk = ds(i-1:i+N-2)'; % disturbance vector
-    cDk = dstrb*ones(N, 1)*heaviside(td(i-1) - start_dstrb); % only one disturb is predicted
-    % cDk = ds(i-1)*ones(N, 1);
+    % cDk = ds(i-1)*ones(N, 1); % fixed disturbance for the prediction horizon
+    cDk = ds(i-1:i+N-2)'; % varying disturbance for the prediction horizon
 
-    H_qp = cB'*cQ*cB + cR;
-    H_qp = (H_qp + H_qp')/2; % make sure it is symmetric
+    Hqp = cB'*cQ*cB + cR;
+    Hqp = (Hqp + Hqp')/2; % make sure it is symmetric
 
-    % f_qp = (cA*x + cM*cDk - cYr(i-1))' * cQ * cB; % - cUr' * cR
-    f_qp = cB'*cQ*(cA*x + cM*cDk - cYr(i-1)); % - cUr' * cR
+    % fqp = (cA*x + cM*cDk - cYr(i-1))' * cQ * cB; % - cUr' * cR
+    fqp = cB'*cQ*(cA*x + cM*cDk - cYr(i-1)); % - cUr' * cR
 
-    A_qp = cF;
-    b_qp = cf;
-    
+    Aqp = cF;
+    bqp = cf;
+
     % compute control input
-    % cU = quadprog(H_qp, f_qp, A_qp, b_qp);
-    cU = quadprog(H_qp, f_qp, A_qp, b_qp, [],[],[],[],[], optimset('Display','off'));
+    cU = quadprog(Hqp, fqp, Aqp, bqp, [],[],[],[],[], optimset('Display','off'));
     u = cU(1);
     
     % simulate the system
@@ -111,6 +110,14 @@ for i = 2:length(td)-N
     us(i) = u;
 end
 
-figure('Position', [0 0 2500 1500]); subplot(2,1,1); 
-plot(td, ys); hold on; plot(td, ref*ones(size(td)), 'r--'); hold off; grid on; 
-subplot(2,1,2); plot(td, us); grid on;
+% keep onlt the first length(td)-N elements
+td = td(1:end-N);
+xs = xs(1:end-N);
+ys = ys(1:end-N);
+us = us(1:end-N);
+ds = ds(1:end-N);
+
+figure('Position', [0 0 2500 1500]); subplot(3,1,1); 
+plot(td, ys); hold on; plot(td, ref*ones(size(td)), 'r--'); hold off; grid on; title('Output');
+subplot(3,1,2); plot(td, us); grid on; title('Input');
+subplot(3,1,3); plot(td, ds); grid on; title('Disturbance');
