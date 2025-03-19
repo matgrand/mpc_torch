@@ -89,8 +89,8 @@ for i = 2:length(td)-N
     % mpc
     x = xs(i-1); d = ds(i-1);
 
-    % cDk = ds(i-1)*ones(N, 1); % fixed disturbance for the prediction horizon
-    cDk = ds(i-1:i+N-2)'; % varying disturbance for the prediction horizon
+    cDk = ds(i-1)*ones(N, 1); % fixed disturbance for the prediction horizon
+    % cDk = ds(i-1:i+N-2)'; % varying disturbance for the prediction horizon
 
     Hqp = cB'*cQ*cB + cR;
     Hqp = (Hqp + Hqp')/2; % make sure it is symmetric
