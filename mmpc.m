@@ -10,7 +10,7 @@ start_dstrb = 150; % [s] start of the disturbance
 
 ref = 50; % [km/h] reference speed
 
-u_max = 1e8; % [N] maximum control input
+u_max = 1e3; % [N] maximum control input
 
 dt = .1; % [s] time step simulation
 T = 500; % [s] simulation time
@@ -65,7 +65,7 @@ Q = 1500; % state cost
 R = 1; % input cost
 S = 0; % terminal cost
 
-F = [1; -1]; % input constraints
+F = [1.; -1.]; % input constraints
 f = [u_max u_max]; % input constraints
 
 % create the condensed matrices
@@ -103,7 +103,7 @@ for i = 2:length(td)-N
     
     % compute control input
     % cU = quadprog(H_qp, f_qp, A_qp, b_qp);
-    cU = quadprog(H_qp, f_qp, [], [], [], [], [], [], [], optimset('Display','off'));
+    cU = quadprog(H_qp, f_qp, A_qp, b_qp, [],[],[],[],[], optimset('Display','off'));
     u = cU(1);
     
     % simulate the system
