@@ -1,9 +1,10 @@
 ## utils functions
-# from numpy import array as vec, concatenate as cat, zeros, sin, cos # numpy version
-from torch import cat, tensor as vec, zeros, sin, cos # torch version
+
+## Select between numpy and torch
+from numpy import array as vec, concatenate as cat, zeros, sin, cos # numpy version
+# from torch import cat, tensor as vec, zeros, sin, cos # torch version
 
 from time import time
-
 
 # integration steps
 def euler_step(f, s, u, dt): # integrate one step with explicit euler
@@ -17,7 +18,6 @@ def euler_step(f, s, u, dt): # integrate one step with explicit euler
 def rk4_step(f, s, u, dt): # integrate one step with Runge-Kutta 4
     n = s.shape[-1]
     s, ds = s[:n//2], s[n//2:] # split the state into position and velocity
-    t1 = time()
     dds1 = vec(f(*s, *ds, u)) #k1
     ds1 = ds
     ds2 = ds + dds1 * dt/2 # k2
@@ -35,4 +35,3 @@ def rk4_step(f, s, u, dt): # integrate one step with Runge-Kutta 4
 
 # def step(f,s,u,dt): return euler_step(f,s,u,dt)
 def step(f,s,u,dt): return rk4_step(f,s,u,dt)
-
