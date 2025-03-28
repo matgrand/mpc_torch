@@ -33,5 +33,19 @@ def rk4_step(f, s, u, dt): # integrate one step with Runge-Kutta 4
     s_new = s + (ds1 + 2*ds2 + 2*ds3 + ds4) * dt/6 
     return cat([s_new, ds_new])
 
-# def step(f,s,u,dt): return euler_step(f,s,u,dt)
-def step(f,s,u,dt): return rk4_step(f,s,u,dt)
+def step(f,s,u,dt): return euler_step(f,s,u,dt)
+# def step(f,s,u,dt): return rk4_step(f,s,u,dt)
+
+# linear system in the form x' = Ax + Bu
+def lin_step_euler(A, B, s, u, dt): # integrate one step with explicit euler
+    return s + (A @ s + B @ u) * dt
+
+def lin_step_rk4(A, B, s, u, dt): # integrate one step with Runge-Kutta 4
+    k1 = A @ s + B @ u
+    k2 = A @ (s + dt/2 * k1) + B @ u
+    k3 = A @ (s + dt/2 * k2) + B @ u
+    k4 = A @ (s + dt * k3) + B @ u
+    return s + dt/6 * (k1 + 2*k2 + 2*k3 + k4)
+
+def lstep(A,B,s,u,dt): return lin_step_euler(A,B,s,u,dt)
+# def lstep(A,B,s,u,dt): return lin_step_rk4(A,B,s,u,dt)
