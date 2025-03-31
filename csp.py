@@ -17,10 +17,10 @@ nt = int(T / SDT) # number of time steps (simulation)
 print(f"Simulation time steps: {nt} ({T} s)")
 
 θ0 = 0.1 # [rad] initial angle
-x0 = 0.1 # [m] initial position
+x0 = -1 # [m] initial position
 
 class PID():
-    def __init__(self, kpx=-0.01, kix=-0.0, kdx=+0.01, kpθ=-0.4, kixθ=0.0, kdxθ=0.02):
+    def __init__(self, kpx=-0.01, kix=-0.0, kdx=+0.03, kpθ=-1, kixθ=0.0, kdxθ=0.1):
         self.kpx, self.kix, self.kdx = kpx, kix, kdx
         self.kpθ, self.kixθ, self.kdxθ = kpθ, kixθ, kdxθ
         self.exi, self.eθi = 0, 0
