@@ -49,3 +49,103 @@ def lin_step_rk4(A, B, s, u, dt): # integrate one step with Runge-Kutta 4
 
 def lstep(A,B,s,u,dt): return lin_step_euler(A,B,s,u,dt)
 # def lstep(A,B,s,u,dt): return lin_step_rk4(A,B,s,u,dt)
+
+
+
+
+
+# quadprog as in matlab
+def quadprog(H, f, A=None, b=None, Aeq=None, beq=None, lb=None, ub=None, x0=None, options=None):
+    """
+    Solve quadratic programming problem:
+        min 0.5*x'*H*x + f'*x
+        subject to:
+            A*x <= b
+            Aeq*x = beq
+            lb <= x <= ub
+    """
+    import numpy as np
+    from scipy.optimize import minimize
+    
+    # Make sure H is symmetric
+    H = (H + H.T) / 2
+    
+    # Define the objective function - ensure it returns a scalar
+    def objective(x):
+        x = np.atleast_1d(x)
+        return float(0.5 * x.T @ H @ x + f.T @ x)  # Ensure scalar output
+    
+    # Define the gradient of the objective function
+    def gradient(x):
+        x = np.atleast_1d(x)
+        return H @ x + f.flatten()  # Ensure proper shape
+    
+    # Set up the constraints
+    constraints = []
+    
+    # Inequality constraints: A*x <= b
+    if A is not None and b is not None:
+        for i in range(A.shape[0]):
+            def constraint_func(x, i=i):
+                x = np.atleast_1d(x)
+                return float(b[i] - A[i, :] @ x)  # Ensure scalar output
+                
+            def constraint_grad(x, i=i):
+                return -A[i, :]
+                
+            constraints.append({
+                'type': 'ineq', 
+                'fun': constraint_func, 
+                'jac': constraint_grad
+            })
+    
+    # Equality constraints: Aeq*x = beq
+    if Aeq is not None and beq is not None:
+        for i in range(Aeq.shape[0]):
+            def eq_constraint_func(x, i=i):
+                x = np.atleast_1d(x)
+                return float(Aeq[i, :] @ x - beq[i])  # Ensure scalar output
+                
+            def eq_constraint_grad(x, i=i):
+                return Aeq[i, :]
+                
+            constraints.append({
+                'type': 'eq', 
+                'fun': eq_constraint_func, 
+                'jac': eq_constraint_grad
+            })
+    
+    # Set up bounds
+    bounds = None
+    if lb is not None or ub is not None:
+        n = H.shape[0]
+        if lb is None:
+            lb = np.full(n, -np.inf)
+        if ub is None:
+            ub = np.full(n, np.inf)
+        bounds = list(zip(lb, ub))
+    
+    # Set default initial point if not provided
+    if x0 is None:
+        x0 = np.zeros(H.shape[0])
+    
+    # Parse options
+    scipy_options = {}
+    if options is not None:
+        if 'Display' in options and options['Display'] == 'off':
+            scipy_options['disp'] = False
+    else:
+        scipy_options['disp'] = False  # Default to no display
+    
+    # Call scipy.optimize.minimize
+    result = minimize(
+        objective, 
+        x0, 
+        method='SLSQP',
+        jac=gradient,
+        constraints=constraints,
+        bounds=bounds,
+        options=scipy_options
+    )
+    
+    return result.x

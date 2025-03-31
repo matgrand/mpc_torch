@@ -15,8 +15,8 @@ def animate_pendulum(x, u, dt, l, fps=60, figsize=(6,6), title='Pendulum'):
     u = np.concatenate([np.array([u[0]]*sw), u, np.array([u[-1]]*sw)]) if WAIT_S > 0 else u
     maxu = max(np.max(np.abs(u)), 1e-3)
     u = l*u/maxu # scale the control input
-    #invert u for angles in [-π/2, π/2]
-    u = np.where(np.abs(x[:,0]) > π/2, -u, u)
+    # #invert u for angles in [-π/2, π/2]
+    # u = np.where(np.abs(x[:,0]) > π/2, -u, u)
     #create a new figure
     fig, ax = plt.subplots(figsize=figsize)
     lim = 1.1*l
@@ -40,7 +40,8 @@ def animate_pendulum(x, u, dt, l, fps=60, figsize=(6,6), title='Pendulum'):
         input.set_data([0, u[i]], [-0.95*lim, -0.95*lim])
         time_text.set_text(time_template % (-WAIT_S+i/fps))
         return line, input, time_text
-    anim = animation.FuncAnimation(fig, animate, range(0, len(x)), init_func=init, blit=True, interval=INTERVAL/fps)
+    # anim = animation.FuncAnimation(fig, animate, range(0, len(x)), init_func=init, blit=True, interval=INTERVAL/fps)
+    anim = animation.FuncAnimation(fig, animate, range(0, len(x)), init_func=init, interval=INTERVAL/fps)
     plt.tight_layout()
     return anim
 
@@ -126,7 +127,8 @@ def animate_double_pendulum(x, u, dt, l1, l2, fps=60, figsize=(6,6), title='Doub
         input.set_data([0, u[i]], [-0.95*lim, -0.95*lim])
         time_text.set_text(time_template % (-WAIT_S+i/fps))
         return line1, line2, input, time_text
-    anim = animation.FuncAnimation(fig, animate, range(0, len(x)), init_func=init, blit=True, interval=INTERVAL/fps)
+    # anim = animation.FuncAnimation(fig, animate, range(0, len(x)), init_func=init, blit=True, interval=INTERVAL/fps)
+    anim = animation.FuncAnimation(fig, animate, range(0, len(x)), init_func=init, interval=INTERVAL/fps)
     plt.tight_layout()
     return anim
 
@@ -192,7 +194,7 @@ def animate_cart_single(x, u, dt, l, fps=60, figsize=(6,6)):
     ax.set_aspect('equal')
     ax.grid(True)
     # ax.set_xlabel('x [m]'), ax.set_ylabel('y [m]')
-    ax.plot([-lim, lim], [0, 0], '-', lw=1, color='white')[0]
+    ax.plot([np.min(x[:,1]), np.max(x[:,1])], [0, 0], '-', lw=1, color='white')[0]
     line = ax.plot([], [], 'o-', lw=5, color='blue')[0]
     input = ax.plot([], [], '-', lw=3, color=C)[0]
     time_template = 'time = %.1fs'
@@ -203,12 +205,18 @@ def animate_cart_single(x, u, dt, l, fps=60, figsize=(6,6)):
         time_text.set_text('')
         return line, input, time_text
     def animate(i):
+        xc = x[i,1] # x cart
         x1, y1 = x[i,1] + l*np.sin(x[i,0]), l*np.cos(x[i,0])
         line.set_data([x[i,1], x1], [0, y1])
-        input.set_data([0, u[i]], [-0.95*lim, -0.95*lim])
+        # input.set_data([xc, xc+u[i]], [-0.95*lim, -0.95*lim])
+        input.set_data([xc, xc+u[i]], [0, 0])
+        xcam = (x[i,1]+x1)/2 # x camera
+        # xcam = x[i,1] # x camera
+        ax.set_xlim(xcam-lim, xcam+lim)
         time_text.set_text(time_template % (-WAIT_S+i/fps))
         return line, input, time_text
-    anim = animation.FuncAnimation(fig, animate, range(0, len(x)), init_func=init, blit=True, interval=INTERVAL/fps)
+    # anim = animation.FuncAnimation(fig, animate, range(0, len(x)), init_func=init, blit=True, interval=INTERVAL/fps)
+    anim = animation.FuncAnimation(fig, animate, range(0, len(x)), init_func=init, interval=INTERVAL/fps)
     plt.tight_layout()
     return anim
 
@@ -228,7 +236,7 @@ def animate_cart_double(x, u, dt, l1, l2, fps=60, figsize=(6,6)):
     ax.set_aspect('equal')
     ax.grid(True)
     # ax.set_xlabel('x [m]'), ax.set_ylabel('y [m]')
-    ax.plot([-lim,lim], [0,0], '-',  lw=1, color='white')[0]
+    ax.plot([np.min(x[:,2]),np.max(x[:,2])], [0,0], '-',  lw=1, color='white')[0]
     line2 = ax.plot([], [], 'o-', lw=5, color='red')[0]
     line1 = ax.plot([], [], 'o-', lw=5, color='blue')[0]
     input = ax.plot([], [], '-', lw=3, color=C)[0]
@@ -241,14 +249,19 @@ def animate_cart_double(x, u, dt, l1, l2, fps=60, figsize=(6,6)):
         time_text.set_text('')
         return line1, line2, input, time_text
     def animate(i):
+        xc = x[i,2] # x cart
         x1, y1 = x[i,2] + l1*np.sin(x[i,0]), l1*np.cos(x[i,0])
         x2, y2 = x1 + l2*np.sin(x[i,1]), y1 + l2*np.cos(x[i,1])
         line1.set_data([x[i,2], x1], [0, y1])
         line2.set_data([x1, x2], [y1, y2])
-        input.set_data([0, u[i]], [-0.95*lim, -0.95*lim])
+        input.set_data([xc, xc+u[i]], [0, 0])
+        xcam = (x[i,2]+x1+x2)/3 # x camera
+        # xcam = x[i,2] # x camera
+        ax.set_xlim(xcam-lim, xcam+lim)
         time_text.set_text(time_template % (-WAIT_S+i/fps))
         return line1, line2, input, time_text
-    anim = animation.FuncAnimation(fig, animate, range(0, len(x)), init_func=init, blit=True, interval=INTERVAL/fps)
+    # anim = animation.FuncAnimation(fig, animate, range(0, len(x)), init_func=init, blit=True, interval=INTERVAL/fps)
+    anim = animation.FuncAnimation(fig, animate, range(0, len(x)), init_func=init, interval=INTERVAL/fps)
     plt.tight_layout()
     return anim
 

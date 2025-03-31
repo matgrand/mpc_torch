@@ -13,8 +13,10 @@ dt = 0.001 # time step
 T  = 15 # simulation time
 nt = int(T / dt) # number of time steps
 
-# uλ = lambda i: 0.1*sin(2*π*T*i/nt) # control input
-uλ = lambda i: 0 # control input
+uλ = lambda i: 0.2*sin(0.3*2*π*T*i/nt+π/2) # control input
+# uλ = lambda i: 0 # control input
+
+us = vec([uλ(i) for i in range(nt)]) # control input
 
 # single pendulum
 ss = zeros((nt, 2))
@@ -24,12 +26,12 @@ for i in tqdm(range(1, nt)):
     ss[i] = step(SP.f, ss[i-1], uλ(i), dt)
 # plot
 plt.figure(figsize=(10, 2))
-plt.plot(ss[:,0], label='s')
-plt.plot(ss[:,1], label='ds')
-plt.legend()
+plt.plot(ss)
+plt.plot(us)
+plt.legend(SP.LAB + ['u'])
 plt.title('Single Pendulum')
 # animation
-anim = animate_pendulum(ss, zeros(nt), dt, PAR.l1, figsize=(8,8), title='Single Pendulum')
+anim = animate_pendulum(ss, us, dt, PAR.l1, figsize=(8,8), title='Single Pendulum')
 plt.show()
 
 # double pendulum
@@ -40,14 +42,12 @@ for i in tqdm(range(1, nt)):
     ss[i] = step(DP.f, ss[i-1], uλ(i), dt)
 # plot
 plt.figure(figsize=(10, 4))
-plt.plot(ss[:,0], label='s1')
-plt.plot(ss[:,1], label='ds1')
-plt.plot(ss[:,2], label='s2')
-plt.plot(ss[:,3], label='ds2')
-plt.legend()
+plt.plot(ss)
+plt.plot(us)
+plt.legend(DP.LAB + ['u'])
 plt.title('Double Pendulum')
 # animation
-anim = animate_double_pendulum(ss, zeros(nt), dt, PAR.l1, PAR.l2, figsize=(8,8), title='Double Pendulum')
+anim = animate_double_pendulum(ss, us, dt, PAR.l1, PAR.l2, figsize=(8,8), title='Double Pendulum')
 plt.show()
 
 # cart single pendulum
@@ -58,14 +58,12 @@ for i in tqdm(range(1, nt)):
     ss[i] = step(CSP.f, ss[i-1], uλ(i), dt)
 # plot
 plt.figure(figsize=(10, 4))
-plt.plot(ss[:,0], label='s')
-plt.plot(ss[:,1], label='ds')
-plt.plot(ss[:,2], label='x')
-plt.plot(ss[:,3], label='dx')
-plt.legend()
+plt.plot(ss)
+plt.plot(us)
+plt.legend(CSP.LAB + ['u'])
 plt.title('Cart Single Pendulum')
 # animation
-anim = animate_cart_single(ss, zeros(nt), dt, PAR.l1, figsize=(8,8))
+anim = animate_cart_single(ss, us, dt, PAR.l1, figsize=(8,8))
 plt.show()
 
 # cart double pendulum
@@ -73,20 +71,15 @@ ss = zeros((nt, 6))
 ss[0] = vec([0.01, -0.01, 0.0, 0.0, 0.0, 0.0]) # initial state
 # integrate
 for i in tqdm(range(1, nt)):
-    u = 0.1 * sin(2 * π * i / nt)
     ss[i] = step(CDP.f, ss[i-1], uλ(i), dt)
 # plot
 plt.figure(figsize=(10, 6))
-plt.plot(ss[:,0], label='s1')
-plt.plot(ss[:,1], label='s2')
-plt.plot(ss[:,2], label='s3')
-plt.plot(ss[:,3], label='ds1')
-plt.plot(ss[:,4], label='ds2')
-plt.plot(ss[:,5], label='ds3')
-plt.legend()
+plt.plot(ss)
+plt.plot(us)
+plt.legend(CDP.LAB + ['u'])
 plt.title('Cart Double Pendulum')
 # animation
-anim = animate_cart_double(ss, zeros(nt), dt, PAR.l1, PAR.l2, fps=FPS, figsize=(8,8))
+anim = animate_cart_double(ss, us, dt, PAR.l1, PAR.l2, fps=FPS, figsize=(8,8))
 plt.show()
 
 
