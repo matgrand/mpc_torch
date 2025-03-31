@@ -13,12 +13,15 @@ dt = 0.001 # time step
 T  = 15 # simulation time
 nt = int(T / dt) # number of time steps
 
+# uλ = lambda i: 0.1*sin(2*π*T*i/nt) # control input
+uλ = lambda i: 0 # control input
+
 # single pendulum
 ss = zeros((nt, 2))
 ss[0] = vec([0.1, 0.0]) # initial state
 # integrate
 for i in tqdm(range(1, nt)):
-    ss[i] = step(SP.f, ss[i-1], 0, dt)
+    ss[i] = step(SP.f, ss[i-1], uλ(i), dt)
 # plot
 plt.figure(figsize=(10, 2))
 plt.plot(ss[:,0], label='s')
@@ -34,7 +37,7 @@ ss = zeros((nt, 4))
 ss[0] = vec([0.1, 0.1, 0.0, 0.0]) # initial state
 # integrate
 for i in tqdm(range(1, nt)):
-    ss[i] = step(DP.f, ss[i-1], 0, dt)
+    ss[i] = step(DP.f, ss[i-1], uλ(i), dt)
 # plot
 plt.figure(figsize=(10, 4))
 plt.plot(ss[:,0], label='s1')
@@ -52,7 +55,7 @@ ss = zeros((nt, 4))
 ss[0] = vec([0.01, 0.0, 0.0, 0.0]) # initial state
 # integrate
 for i in tqdm(range(1, nt)):
-    ss[i] = step(CSP.f, ss[i-1], 0, dt)
+    ss[i] = step(CSP.f, ss[i-1], uλ(i), dt)
 # plot
 plt.figure(figsize=(10, 4))
 plt.plot(ss[:,0], label='s')
@@ -70,7 +73,8 @@ ss = zeros((nt, 6))
 ss[0] = vec([0.01, -0.01, 0.0, 0.0, 0.0, 0.0]) # initial state
 # integrate
 for i in tqdm(range(1, nt)):
-    ss[i] = step(CDP.f, ss[i-1], 0, dt)
+    u = 0.1 * sin(2 * π * i / nt)
+    ss[i] = step(CDP.f, ss[i-1], uλ(i), dt)
 # plot
 plt.figure(figsize=(10, 6))
 plt.plot(ss[:,0], label='s1')
