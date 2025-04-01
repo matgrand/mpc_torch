@@ -54,6 +54,20 @@ def lstep(A,B,s,u,dt): return lin_step_euler(A,B,s,u,dt)
 
 
 
+
+
+## MATLAB like functions
+
+def deg2rad(deg): return deg * π / 180 # degrees to radians
+def rad2deg(rad): return rad * 180 / π # radians to degrees
+
+# from scipy.signal import cont2discrete as c2d 
+# # A, B, C, D, Ts = cont2discrete((A,B,C,D), Ts, method='zoh') # zero order hold
+
+
+
+
+
 # quadprog as in matlab
 def quadprog(H, f, A=None, b=None, Aeq=None, beq=None, lb=None, ub=None, x0=None, options=None):
     """

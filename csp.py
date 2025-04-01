@@ -42,6 +42,22 @@ class PID():
 
         return u
     
+class MPC(): # linear mpc
+    def __init__(self, A, B, C, Q, R):
+        self.A, self.B, self.C = A, B, C
+        self.Q, self.R = Q, R
+        self.nx = A.shape[0]
+        self.nu = B.shape[1]
+        self.N = 10 # prediction horizon
+        self.x0 = zeros(self.nx) # initial state
+        self.u0 = zeros((self.N-1, self.nu)) # initial control input
+
+    def get_control(self):
+        H = 2 * (self.B.T @ self.Q @ self.B + self.R)
+        f = 2 * (self.B.T @ self.Q @ (self.A @ self.x0 + self.B @ self.u0))
+        return H, f
+
+
 # cart single pendulum
 ss = zeros((nt, 4)) # [ θ, x, dθ , dx ]
 ys = zeros((nt, 2)) # [ θ, x ]
