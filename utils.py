@@ -65,7 +65,111 @@ def rad2deg(rad): return rad * 180 / π # radians to degrees
 # # A, B, C, D, Ts = cont2discrete((A,B,C,D), Ts, method='zoh') # zero order hold
 
 
+# creating the condensed matrices
 
+def create_condensed_matrices(A, B, C, M, Q, R, S, F, f, N):
+    """
+    Create condensed matrices for Model Predictive Control.
+    
+    Parameters:
+    -----------
+    A, B, C : ndarray
+        State space matrices
+    M : ndarray
+        Disturbance matrix
+    Q, R, S : ndarray
+        State, input, terminal cost matrices
+    F, f : ndarray
+        Inequality constraints
+    N : int
+        Prediction horizon
+        
+    Returns:
+    --------
+    tuple:
+        (cAC, cBC, cMC, cQ, cR, cF, cf)
+        Condensed matrices for the MPC problem
+    """
+    import numpy as np
+    from numpy import kron, eye, zeros, ones
+    # Get dimensions
+    n, m = A.shape[0], B.shape[1]
+    p, q = C.shape[0], M.shape[1]
+    
+    # Check dimensions
+    assert A.shape == (n, n), f'A.shape: {A.shape}'
+    assert B.shape == (n, m), f'B.shape: {B.shape}'
+    assert C.shape == (p, n), f'C.shape: {C.shape}'
+    assert M.shape == (n, q), f'M.shape: {M.shape}'
+    assert Q.shape == (n, n), f'Q.shape: {Q.shape}'
+    assert R.shape == (m, m), f'R.shape: {R.shape}'
+    assert S.shape == (n, n), f'S.shape: {S.shape}'
+
+    # Create standard condensed matrices
+    cQ = kron(eye(N), Q)
+    cR = kron(eye(N), R)
+    cF = kron(eye(N), F)
+    cf = kron(ones((N, 1)), f)
+
+    # Pre-allocate matrices
+    cAC = zeros((N*p, n))
+    cBC = zeros((N*p, N*m))
+    cMC = zeros((N*p, N*q))
+
+    # Fill matrices
+    for i in range(1, N+1):
+        row_idx = (i-1)*p
+        
+        # cAC
+        cAC[row_idx:row_idx+p, :] = C @ np.linalg.matrix_power(A, i)
+        
+        # cBC and cMC
+        for j in range(1, N+1):
+            col_idx_B = (j-1)*m
+            col_idx_M = (j-1)*q
+            
+            if j <= i:
+                A_power = np.linalg.matrix_power(A, i-j)
+                cBC[row_idx:row_idx+p, col_idx_B:col_idx_B+m] = C @ A_power @ B
+                cMC[row_idx:row_idx+p, col_idx_M:col_idx_M+q] = C @ A_power @ M
+    
+    # Add terminal cost
+    # Update cQ with terminal cost
+    cQ = np.block([
+        [cQ[:(N-1)*p, :(N-1)*p], zeros(((N-1)*p, n))],
+        [zeros((n, (N-1)*p)), S]
+    ])
+    
+    # Create new matrices with terminal cost
+    cAC_new = zeros((N*p, n))
+    cAC_new[:(N-1)*p, :] = cAC[:(N-1)*p, :]
+    cAC_new[(N-1)*p:, :] = np.linalg.matrix_power(A, N)
+    cAC = cAC_new
+    
+    # Update cBC
+    cBC_new = zeros((N*p, N*m))
+    cBC_new[:(N-1)*p, :(N-1)*m] = cBC[:(N-1)*p, :(N-1)*m]
+    
+    # Fill in the bottom row for cBC
+    for j in range(1, N+1):
+        col_idx = (j-1)*m
+        if j <= N:
+            cBC_new[(N-1)*p:(N-1)*p+n, col_idx:col_idx+m] = np.linalg.matrix_power(A, N-j) @ B
+    cBC = cBC_new
+    
+    # Update cMC
+    cMC_new = zeros((N*p, N*q))
+    cMC_new[:(N-1)*p, :(N-1)*q] = cMC[:(N-1)*p, :(N-1)*q]
+    
+    # Fill in the bottom row for cMC
+    for j in range(1, N+1):
+        col_idx = (j-1)*q
+        if j <= N:
+            cMC_new[(N-1)*p:(N-1)*p+n, col_idx:col_idx+q] = np.linalg.matrix_power(A, N-j) @ M
+    cMC = cMC_new
+    
+    # Return tuple of matrices
+    return cAC, cBC, cMC, cQ, cR, cF, cf
 
 
 # quadprog as in matlab
