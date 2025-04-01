@@ -14,7 +14,7 @@ T  = 15 # simulation time
 nt = int(T / dt) # number of time steps
 
 uλ = lambda i: 0.2*sin(0.3*2*π*T*i/nt+π/2) # control input
-# uλ = lambda i: 0 # control input
+uλ = lambda i: 0 # control input
 
 us = vec([uλ(i) for i in range(nt)]) # control input
 

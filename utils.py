@@ -93,8 +93,9 @@ def create_condensed_matrices(A, B, C, M, Q, R, S, F, f, N):
     import numpy as np
     from numpy import kron, eye, zeros, ones
     # Get dimensions
-    n, m = A.shape[0], B.shape[1]
-    p, q = C.shape[0], M.shape[1]
+    n, m = A.shape[0], B.shape[1] # state and input dimensions
+    p, q = C.shape[0], M.shape[1] # output and disturbance dimensions
+    print(f'n (state dim): {n}, m (input dim): {m}, p (out dim): {p}, q (disturbance dim): {q}')
     
     # Check dimensions
     assert A.shape == (n, n), f'A.shape: {A.shape}'
