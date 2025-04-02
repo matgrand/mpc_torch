@@ -128,7 +128,7 @@ for i in tqdm(range(1, nt)):
     if i % STSM == 0: # update control input
         # u = pid.get_control(ys[i-1], vec([0.0, 0.0]))
         u = mpc.get_control(ss[i-1], vec([0.0, 0.0, 0.0, 0.0]))
-        assert -MAXU*1.1 <= u <= MAXU*1.1, f'u: {u}, MAXU: {MAXU}'
+        assert -MAXU*1.01 <= u <= MAXU*1.01, f'u: {u}, MAXU: {MAXU}'
         # u = 0
     ss[i] = step(sys.f, ss[i-1], u, DT)
     ys[i] = sys.C @ ss[i] # system output

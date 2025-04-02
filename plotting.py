@@ -1,5 +1,10 @@
 import numpy as np; π = np.pi
 import matplotlib.pyplot as plt
+plt.style.use('dark_background')
+plt.rcParams['axes.grid'] = True
+plt.rcParams['grid.color'] = 'gray'
+plt.rcParams['grid.linestyle'] = '--'
+plt.rcParams['grid.alpha'] = 0.5
 import matplotlib.animation as animation
 WAIT_S = 0.5 # wait time in seconds
 INTERVAL = 500 # interval in milliseconds (1000 = real time)
